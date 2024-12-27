@@ -1,10 +1,9 @@
 def convert_text_to_braille(text):
     """
-    Convert a given text into a rudimentary Braille representation.
-    This is a simplistic approach. For a full Braille translation,
-    integrate with a library or braille translation service.
+    Convert a given text into a rudimentary Braille representation while preserving spaces,
+    line breaks, and other formatting for better organization.
     """
-    # Example simple mapping (A-Z, 0-9, and some punctuation)
+    # Mapping for Braille characters
     braille_map = {
         'a': '⠁', 'b': '⠃', 'c': '⠉', 'd': '⠙', 'e': '⠑',
         'f': '⠋', 'g': '⠛', 'h': '⠓', 'i': '⠊', 'j': '⠚',
@@ -23,13 +22,18 @@ def convert_text_to_braille(text):
         ']': '⠻', '|': '⠳', '~': '⠴'
     }
 
-    # Convert text character by character
+    # Convert text character by character while preserving structure
     braille_result = []
-    for char in text.lower():
-        if char in braille_map:
-            braille_result.append(braille_map[char])
-        else:
-            # If no mapping found, just append as is or custom logic
-            braille_result.append(char)
+    for line in text.splitlines():  # Process each line separately
+        braille_line = []
+        for char in line:
+            if char.lower() in braille_map:
+                braille_line.append(braille_map[char.lower()])
+            else:
+                # If no mapping is found, append the original character
+                braille_line.append(char)
+        # Join the Braille characters for the line and add it to the result
+        braille_result.append("".join(braille_line))
 
-    return "".join(braille_result)
+    # Join lines with a new line character to preserve line breaks
+    return "\n\n".join(braille_result)  # Add double line breaks for paragraph separation

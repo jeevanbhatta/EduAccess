@@ -3,11 +3,14 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask import send_file
 from flask_cors import CORS
 from dotenv import load_dotenv
-from services.text_to_speech import convert_text_to_speech
+from werkzeug.utils import secure_filename
 
 from services.text_to_speech import convert_text_to_speech
 from services.video_to_audio import convert_video_to_audio
 from services.braille_converter import convert_text_to_braille
+from services.file_extractor import extract_text_from_file
+
+UPLOAD_FOLDER = 'uploads'
 
 app = Flask(__name__)
 CORS(app)
@@ -88,6 +91,29 @@ def download_audio(filename):
     """
     # Return the file from the audio directory
     return send_from_directory(AUDIO_DIR, filename, as_attachment=False)
+
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+@app.route('/api/upload-text-file', methods=['POST'])
+def upload_text_file():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file uploaded"}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "No file selected"}), 400
+
+    filename = secure_filename(file.filename)
+    file_path = os.path.join(UPLOAD_FOLDER, filename)
+    file.save(file_path)
+
+    try:
+        extracted_text = extract_text_from_file(file_path)
+        os.remove(file_path)  # Clean up after extraction
+        return jsonify({"text": extracted_text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 
 if __name__ == "__main__":
