@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask import send_file
 from flask_cors import CORS
 from dotenv import load_dotenv
+from services.text_to_speech import convert_text_to_speech
 
 from services.text_to_speech import convert_text_to_speech
 from services.video_to_audio import convert_video_to_audio
