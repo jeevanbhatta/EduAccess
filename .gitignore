@@ -1,0 +1,22 @@
+# Ignore editor and IDE files
+.vscode/
+.idea/
+
+# Ignore build output files
+build/
+dist/
+node_modules/
+
+# Ignore log files
+*.log
+
+# Ignore temporary files
+*.tmp
+*.bak
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore Python virtual environment
+venv/
