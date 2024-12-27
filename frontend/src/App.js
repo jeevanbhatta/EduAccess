@@ -16,7 +16,7 @@ function App() {
   };
 
   return (
-    <div style={{ margin: '2rem' }}>
+    <div style={{ margin: '2rem', fontFamily: 'Arial, sans-serif' }}>
       <h1>EduAccess</h1>
       <UploadForm
         onAudioReceived={handleAudioReceived}
@@ -33,9 +33,20 @@ function App() {
       {brailleText && (
         <div style={{ marginTop: '2rem' }}>
           <h2>Braille Output</h2>
-          <p style={{ fontSize: '1.5rem', backgroundColor: '#f4f4f4', padding: '10px' }}>
+          {/* Use a <pre> tag to preserve formatting like line breaks and spaces */}
+          <pre
+            style={{
+              fontSize: '1.5rem',
+              backgroundColor: '#f4f4f4',
+              padding: '10px',
+              whiteSpace: 'pre-wrap', // Ensures spacing is preserved
+              wordWrap: 'break-word', // Allows wrapping of long text
+              borderRadius: '5px',
+              border: '1px solid #ddd',
+            }}
+          >
             {brailleText}
-          </p>
+          </pre>
         </div>
       )}
     </div>

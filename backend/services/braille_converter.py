@@ -1,7 +1,7 @@
 def convert_text_to_braille(text):
     """
-    Convert a given text into a rudimentary Braille representation while preserving spaces,
-    line breaks, and other formatting for better organization.
+    Convert a given text into a Braille representation while preserving formatting,
+    such as line breaks and paragraph spacing.
     """
     # Mapping for Braille characters
     braille_map = {
@@ -22,18 +22,19 @@ def convert_text_to_braille(text):
         ']': '⠻', '|': '⠳', '~': '⠴'
     }
 
-    # Convert text character by character while preserving structure
-    braille_result = []
-    for line in text.splitlines():  # Process each line separately
+    # Split text into lines
+    lines = text.splitlines()
+
+    braille_lines = []
+    for line in lines:
         braille_line = []
         for char in line:
             if char.lower() in braille_map:
                 braille_line.append(braille_map[char.lower()])
             else:
-                # If no mapping is found, append the original character
+                # Append unknown characters as-is
                 braille_line.append(char)
-        # Join the Braille characters for the line and add it to the result
-        braille_result.append("".join(braille_line))
+        braille_lines.append("".join(braille_line))
 
-    # Join lines with a new line character to preserve line breaks
-    return "\n\n".join(braille_result)  # Add double line breaks for paragraph separation
+    # Join Braille lines with a newline character
+    return "\n".join(braille_lines)
