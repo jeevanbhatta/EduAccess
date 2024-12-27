@@ -1,5 +1,3 @@
-Here is the full **README.md** file for your project:
-
 # EduAccess
 
 **EduAccess** is a platform that makes educational materials accessible for blind and visually impaired individuals. It converts text and video content into audio or Braille formats, empowering users with greater access to knowledge and learning resources.
