@@ -1,13 +1,26 @@
-import os
-from pylibdmtx import encode
+def convert_text_to_braille(text):
+    """
+    Convert a given text into a rudimentary Braille representation.
+    This is a simplistic approach. For a full Braille translation,
+    integrate with a library or braille translation service.
+    """
+    # Example simple mapping (A-Z only, ignoring case)
+    braille_map = {
+        'a': '⠁', 'b': '⠃', 'c': '⠉', 'd': '⠙', 'e': '⠑',
+        'f': '⠋', 'g': '⠛', 'h': '⠓', 'i': '⠊', 'j': '⠚',
+        'k': '⠅', 'l': '⠇', 'm': '⠍', 'n': '⠝', 'o': '⠕',
+        'p': '⠏', 'q': '⠟', 'r': '⠗', 's': '⠎', 't': '⠞',
+        'u': '⠥', 'v': '⠧', 'w': '⠺', 'x': '⠭', 'y': '⠽',
+        'z': '⠵'
+    }
 
-def convert_text_to_braille(file):
-    output_path = f"./static/audio/{file.filename.split('.')[0]}.brf"
-    with open(file, 'r') as text_file:
-        text = text_file.read()
+    # Convert text character by character
+    braille_result = []
+    for char in text.lower():
+        if char in braille_map:
+            braille_result.append(braille_map[char])
+        else:
+            # If no mapping found (punctuation, space, etc.), just append as is or custom logic
+            braille_result.append(char)
 
-    # Convert text to Braille (simplified example, actual Braille uses different encoding)
-    braille_text = text.translate(str.maketrans("abcdefghijklmnopqrstuvwxyz", "⠁⠃⠉⠙⠑⠋⠛⠓⠊⠚⠅⠇⠍⠝⠕⠏⠟⠗⠎⠞⠥⠧⠺⠭⠽⠵"))
-    with open(output_path, 'w') as braille_file:
-        braille_file.write(braille_text)
-    return output_path
+    return "".join(braille_result)

@@ -20,3 +20,6 @@ Thumbs.db
 
 # Ignore Python virtual environment
 venv/
+
+# Environment variables
+.env
