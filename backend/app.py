@@ -48,10 +48,10 @@ def api_video_to_audio():
     """
     Convert video to audio
     """
-    if "videoFile" not in request.files:
+    if "file" not in request.files:  # Match the front-end key
         return jsonify({"error": "No video file uploaded"}), 400
 
-    video_file = request.files["videoFile"]
+    video_file = request.files["file"]  # Ensure this matches the key in the form
     if video_file.filename == "":
         return jsonify({"error": "No video filename provided"}), 400
 
@@ -131,6 +131,25 @@ def analyze_image_route():
         return jsonify(result)
     except Exception as e:
         print(f"Error in /api/analyze-image: {e}")
+        return jsonify({"error": str(e)}), 500
+    
+@app.route("/api/video-to-text-and-braille", methods=["POST"])
+def api_video_to_text_and_braille():
+    """
+    Converts video to text and braille by extracting its audio.
+    """
+    if "file" not in request.files:
+        return jsonify({"error": "No video file uploaded"}), 400
+
+    video_file = request.files["file"]
+    if video_file.filename == "":
+        return jsonify({"error": "No video filename provided"}), 400
+
+    try:
+        result = convert_video_to_text_and_braille(video_file, AUDIO_DIR)
+        return jsonify(result)
+    except Exception as e:
+        print(f"Error in /api/video-to-text-and-braille: {e}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
