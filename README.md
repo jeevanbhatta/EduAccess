@@ -152,5 +152,4 @@ We welcome contributions to enhance the project! Feel free to open issues or sub
 
 ## Contact
 
-For questions or support, reach out to the project maintainer at [jeevanbhattacs@gmil.com].
-```
+For questions or support, reach out to the project maintainer at jeevanbhattacs@gmil.com.

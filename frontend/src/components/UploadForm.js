@@ -96,56 +96,85 @@ const UploadForm = ({ onAudioReceived, onBrailleReceived }) => {
   };
 
   return (
-    <div>
-      <h2>Upload or Enter Text</h2>
-      <textarea
-        rows="4"
-        cols="50"
-        value={textInput}
-        onChange={(e) => setTextInput(e.target.value)}
-        placeholder="Enter text for TTS / Braille conversion"
-        disabled={isLoading}
-      />
-      <br />
-      <input
-        type="file"
-        accept=".txt,.pdf,.docx"
-        onChange={(e) => setTextFile(e.target.files[0])}
-        disabled={isLoading}
-      />
-      <button onClick={handleTextFileUpload} disabled={isLoading}>
-        {isLoading ? 'Extracting Text...' : 'Upload and Extract Text'}
-      </button>
-      <br />
-      <button onClick={handleTextToAudio} disabled={isLoading}>
-        {isLoading ? 'Converting Text to Audio...' : 'Convert Text to Audio'}
-      </button>
-      <button onClick={handleTextToBraille} disabled={isLoading}>
-        {isLoading ? 'Converting Text to Braille...' : 'Convert Text to Braille'}
-      </button>
-      <br /><br />
+    <div style={{ fontFamily: 'Arial, sans-serif', margin: '2rem', maxWidth: '600px' }}>
+      <h2 style={{ textAlign: 'center', color: '#333' }}>EduAccess: Upload and Convert</h2>
+      <div style={{ marginBottom: '1.5rem' }}>
+        <h3>1. Text Input</h3>
+        <textarea
+          rows="5"
+          cols="50"
+          value={textInput}
+          onChange={(e) => setTextInput(e.target.value)}
+          placeholder="Enter or upload text for conversion"
+          style={{
+            width: '100%',
+            padding: '10px',
+            border: '1px solid #ccc',
+            borderRadius: '5px',
+          }}
+          disabled={isLoading}
+        />
+        <div style={{ marginTop: '0.5rem' }}>
+          <input
+            type="file"
+            accept=".txt,.pdf,.docx"
+            onChange={(e) => setTextFile(e.target.files[0])}
+            disabled={isLoading}
+            style={{ marginBottom: '0.5rem' }}
+          />
+          <button onClick={handleTextFileUpload} disabled={isLoading} style={buttonStyle}>
+            {isLoading ? 'Extracting Text...' : 'Upload and Extract Text'}
+          </button>
+        </div>
+        <div style={{ marginTop: '1rem' }}>
+          <button onClick={handleTextToAudio} disabled={isLoading} style={buttonStyle}>
+            {isLoading ? 'Converting to Audio...' : 'Convert Text to Audio'}
+          </button>
+          <button onClick={handleTextToBraille} disabled={isLoading} style={buttonStyle}>
+            {isLoading ? 'Converting to Braille...' : 'Convert Text to Braille'}
+          </button>
+        </div>
+      </div>
 
-      <h2>Upload Video</h2>
-      <input
-        type="file"
-        accept="video/*"
-        onChange={(e) => {
-          setVideoFile(e.target.files[0]);
-          setVideoFileName(e.target.files[0]?.name || '');
-        }}
-        disabled={isLoading}
-      />
-      {videoFileName && <p>Selected File: {videoFileName}</p>}
-      <button onClick={handleVideoToAudio} disabled={isLoading}>
-        {isLoading ? 'Converting Video to Audio...' : 'Convert Video to Audio'}
-      </button>
-      <br /><br />
+      <div style={{ marginBottom: '1.5rem' }}>
+        <h3>2. Video Upload</h3>
+        <input
+          type="file"
+          accept="video/*"
+          onChange={(e) => {
+            setVideoFile(e.target.files[0]);
+            setVideoFileName(e.target.files[0]?.name || '');
+          }}
+          disabled={isLoading}
+        />
+        {videoFileName && <p style={{ marginTop: '0.5rem' }}>Selected File: {videoFileName}</p>}
+        <button onClick={handleVideoToAudio} disabled={isLoading} style={buttonStyle}>
+          {isLoading ? 'Converting Video...' : 'Convert Video to Audio'}
+        </button>
+      </div>
 
-      <button onClick={handleReset} disabled={isLoading} style={{ backgroundColor: '#f44336', color: 'white' }}>
-        Reset Form
-      </button>
+      <div style={{ textAlign: 'center' }}>
+        <button
+          onClick={handleReset}
+          disabled={isLoading}
+          style={{ ...buttonStyle, backgroundColor: '#ff4d4d', color: '#fff' }}
+        >
+          Reset Form
+        </button>
+      </div>
     </div>
   );
+};
+
+const buttonStyle = {
+  backgroundColor: '#007bff',
+  color: 'white',
+  padding: '10px 15px',
+  margin: '5px',
+  border: 'none',
+  borderRadius: '5px',
+  cursor: 'pointer',
+  fontSize: '14px',
 };
 
 export default UploadForm;

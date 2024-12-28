@@ -113,7 +113,18 @@ def upload_text_file():
         return jsonify({"text": extracted_text})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+@app.route("/api/analyze-image", methods=["POST"])
+def analyze_image_route():
+    data = request.json
+    image_url = data.get("imageUrl")
+    if not image_url:
+        return jsonify({"error": "No image URL provided"}), 400
 
+    try:
+        result = process_image(image_url, "./static/audio")
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":
