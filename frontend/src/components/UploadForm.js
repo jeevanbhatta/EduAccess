@@ -9,56 +9,103 @@ const UploadForm = ({ onAudioReceived, onBrailleReceived }) => {
   const [videoFileName, setVideoFileName] = useState("");
   const [imageFileName, setImageFileName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleJsonRequest = async (data, endpoint, callback) => {
-    setIsLoading(true);
+  const handleFileUpload = async (file, endpoint, callback) => {
+    if (!file) {
+      alert("Please select a file.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
     try {
-      const response = await axios.post(endpoint, data, {
-        headers: { "Content-Type": "application/json" },
+      setIsLoading(true);
+      setErrorMessage(""); // Clear previous errors
+      const response = await axios.post(endpoint, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
       callback(response.data);
     } catch (err) {
-      console.error(err);
-      alert(`Error: ${err.response?.data?.error || err.message}`);
+      console.error(`Error uploading file to ${endpoint}:`, err);
+      setErrorMessage(err.response?.data?.error || "An unexpected error occurred.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleAnalyzeImage = async () => {
-    if (!imageFile) {
-      alert("Please upload an image.");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64String = reader.result.replace(/^data:image\/[a-z]+;base64,/, "");
-      const payload = { image: base64String };
-      handleJsonRequest(payload, "http://localhost:5000/api/analyze-image", (data) => {
-        setTextInput(data.text || "");
+  const handleJsonRequest = async (data, endpoint, callback) => {
+    try {
+      setIsLoading(true);
+      setErrorMessage(""); // Clear previous errors
+      const response = await axios.post(endpoint, data, {
+        headers: { "Content-Type": "application/json" },
       });
-    };
-
-    reader.readAsDataURL(imageFile);
+      callback(response.data);
+    } catch (err) {
+      console.error(`Error sending data to ${endpoint}:`, err);
+      setErrorMessage(err.response?.data?.error || "An unexpected error occurred.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleTextFileUpload = async () => {
-    if (!textFile) {
-      alert("Please select a text file.");
+    await handleFileUpload(textFile, "http://localhost:5000/api/upload-text-file", (data) =>
+      setTextInput(data.text || "")
+    );
+  };
+
+  const handleAnalyzeImage = async () => {
+    await handleFileUpload(imageFile, "http://localhost:5000/api/analyze-image", (data) =>
+      setTextInput(data.text || "")
+    );
+  };
+
+  const handleVideoToAudio = async () => {
+    await handleFileUpload(videoFile, "http://localhost:5000/api/video-to-audio", (data) =>
+      onAudioReceived(data.audio_file)
+    );
+  };
+
+  const handleTextToAudio = async () => {
+    if (!textInput.trim()) {
+      alert("Please enter text for conversion.");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const payload = { text: reader.result };
-      handleJsonRequest(payload, "http://localhost:5000/api/upload-text-file", (data) => {
-        setTextInput(data.text || "");
-      });
-    };
-
-    reader.readAsText(textFile);
+    await handleJsonRequest(
+      { text: textInput.trim() },
+      "http://localhost:5000/api/text-to-audio",
+      (data) => onAudioReceived(data.audio_file)
+    );
   };
+
+  const handleTextToBraille = async () => {
+    const trimmedText = textInput.trim(); // Trim the text input
+    if (!trimmedText) {
+      alert("Please enter text for conversion.");
+      return;
+    }
+  
+    try {
+      setIsLoading(true);
+      setErrorMessage(""); // Clear any previous error message
+      const response = await axios.post(
+        "http://localhost:5000/api/text-to-braille",
+        { text: trimmedText }, // Send trimmed text
+        { headers: { "Content-Type": "application/json" } }
+      );
+      onBrailleReceived(response.data.braille);
+    } catch (err) {
+      console.error("Error converting text to Braille:", err);
+      setErrorMessage(err.response?.data?.error || "An unexpected error occurred.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
 
   const handleReset = () => {
     setTextInput("");
@@ -67,11 +114,25 @@ const UploadForm = ({ onAudioReceived, onBrailleReceived }) => {
     setImageFile(null);
     setVideoFileName("");
     setImageFileName("");
+    setErrorMessage("");
   };
 
   return (
     <div style={{ fontFamily: "Arial, sans-serif", margin: "2rem", maxWidth: "600px" }}>
       <h2 style={{ textAlign: "center", color: "#333" }}>EduAccess: Upload and Convert</h2>
+      {errorMessage && (
+        <div
+          style={{
+            color: "red",
+            backgroundColor: "#ffe6e6",
+            padding: "10px",
+            marginBottom: "1rem",
+            borderRadius: "5px",
+          }}
+        >
+          {errorMessage}
+        </div>
+      )}
 
       {/* Text Upload Section */}
       <div style={{ marginBottom: "1.5rem" }} aria-labelledby="text-section">
@@ -95,28 +156,10 @@ const UploadForm = ({ onAudioReceived, onBrailleReceived }) => {
         <button onClick={handleTextFileUpload} disabled={isLoading}>
           {isLoading ? "Extracting Text..." : "Upload and Extract Text"}
         </button>
-        <button
-          onClick={() =>
-            handleJsonRequest(
-              { text: textInput },
-              "http://localhost:5000/api/text-to-audio",
-              (data) => onAudioReceived(data.audio_file)
-            )
-          }
-          disabled={isLoading}
-        >
+        <button onClick={handleTextToAudio} disabled={isLoading}>
           {isLoading ? "Converting to Audio..." : "Convert Text to Audio"}
         </button>
-        <button
-          onClick={() =>
-            handleJsonRequest(
-              { text: textInput },
-              "http://localhost:5000/api/text-to-braille",
-              (data) => onBrailleReceived(data.braille)
-            )
-          }
-          disabled={isLoading}
-        >
+        <button onClick={handleTextToBraille} disabled={isLoading}>
           {isLoading ? "Converting to Braille..." : "Convert Text to Braille"}
         </button>
       </div>
@@ -154,16 +197,7 @@ const UploadForm = ({ onAudioReceived, onBrailleReceived }) => {
           aria-label="Upload a video file"
         />
         {videoFileName && <p>Selected File: {videoFileName}</p>}
-        <button
-          onClick={() =>
-            handleJsonRequest(
-              { video: videoFile },
-              "http://localhost:5000/api/video-to-audio",
-              (data) => onAudioReceived(data.audio_file)
-            )
-          }
-          disabled={isLoading}
-        >
+        <button onClick={handleVideoToAudio} disabled={isLoading}>
           {isLoading ? "Converting Video..." : "Convert Video to Audio"}
         </button>
       </div>
