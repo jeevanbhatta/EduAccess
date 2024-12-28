@@ -69,6 +69,34 @@ const UploadForm = ({ onAudioReceived, onBrailleReceived }) => {
     );
   };
 
+  const handleVideoToTextAndBraille = async () => {
+    if (!videoFile) {
+      alert("Please select a video file.");
+      return;
+    }
+  
+    const formData = new FormData();
+    formData.append("file", videoFile);
+  
+    try {
+      setIsLoading(true);
+      setErrorMessage(""); // Clear any previous errors
+  
+      const response = await axios.post("http://localhost:5000/api/video-to-text-and-braille", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+  
+      const data = response.data;
+      setTextInput(data.text || "");
+      onBrailleReceived(data.braille || "");
+    } catch (err) {
+      console.error("Error in handleVideoToTextAndBraille:", err);
+      setErrorMessage(err.response?.data?.error || "An unexpected error occurred.");
+    } finally {
+      setIsLoading(false);
+    }
+  };  
+
   const handleTextToAudio = async () => {
     if (!textInput.trim()) {
       alert("Please enter text for conversion.");
@@ -83,29 +111,18 @@ const UploadForm = ({ onAudioReceived, onBrailleReceived }) => {
   };
 
   const handleTextToBraille = async () => {
-    const trimmedText = textInput.trim(); // Trim the text input
+    const trimmedText = textInput.trim();
     if (!trimmedText) {
       alert("Please enter text for conversion.");
       return;
     }
-  
-    try {
-      setIsLoading(true);
-      setErrorMessage(""); // Clear any previous error message
-      const response = await axios.post(
-        "http://localhost:5000/api/text-to-braille",
-        { text: trimmedText }, // Send trimmed text
-        { headers: { "Content-Type": "application/json" } }
-      );
-      onBrailleReceived(response.data.braille);
-    } catch (err) {
-      console.error("Error converting text to Braille:", err);
-      setErrorMessage(err.response?.data?.error || "An unexpected error occurred.");
-    } finally {
-      setIsLoading(false);
-    }
+
+    await handleJsonRequest(
+      { text: trimmedText },
+      "http://localhost:5000/api/text-to-braille",
+      (data) => onBrailleReceived(data.braille)
+    );
   };
-  
 
   const handleReset = () => {
     setTextInput("");
@@ -199,6 +216,9 @@ const UploadForm = ({ onAudioReceived, onBrailleReceived }) => {
         {videoFileName && <p>Selected File: {videoFileName}</p>}
         <button onClick={handleVideoToAudio} disabled={isLoading}>
           {isLoading ? "Converting Video..." : "Convert Video to Audio"}
+        </button>
+        <button onClick={handleVideoToTextAndBraille} disabled={isLoading}>
+          {isLoading ? "Processing Video..." : "Convert Video to Text and Braille"}
         </button>
       </div>
 

@@ -4,38 +4,41 @@ from moviepy.editor import VideoFileClip
 from .audio_to_text import convert_audio_to_text
 from .braille_converter import convert_text_to_braille
 
-def convert_video_to_text_and_braille(video_file, audio_dir):
+def convert_video_to_audio_text_and_braille(video_file):
     """
-    Converts a video file to audio, then extracts text and braille.
-    Returns a dictionary with audio file, text, and braille outputs.
+    Converts a video file to audio, extracts text, and converts it to braille.
+    Returns a dictionary with audio file path, text, and braille outputs.
     """
-    # Generate a unique filename for the audio
-    audio_filename = f"video_audio_{uuid.uuid4().hex}.mp3"
-    audio_file_path = os.path.join(audio_dir, audio_filename)
-
-    # Temporarily save the video file
-    temp_video_path = os.path.join(audio_dir, f"temp_{uuid.uuid4().hex}_{video_file.filename}")
-    video_file.save(temp_video_path)
+    temp_video_path = None
+    temp_audio_path = None
 
     try:
-        # Extract audio from the video
+        # Save the video temporarily
+        temp_video_path = f"/tmp/{uuid.uuid4().hex}.mp4"
+        video_file.save(temp_video_path)
+
+        # Extract audio from the video using MoviePy
+        temp_audio_path = f"/tmp/{uuid.uuid4().hex}.wav"
         clip = VideoFileClip(temp_video_path)
-        audio = clip.audio
-        audio.write_audiofile(audio_file_path)
+        clip.audio.write_audiofile(temp_audio_path)
         clip.close()
 
-        # Convert audio to text
-        text = convert_audio_to_text(audio_file_path)
+        # Convert the audio to text
+        text = convert_audio_to_text(temp_audio_path)
 
-        # Convert text to braille
+        # Convert text to Braille
         braille = convert_text_to_braille(text)
 
         return {
-            "audio_file": audio_filename,
+            "audio_file_path": temp_audio_path,  # Return the path to the audio file if needed
             "text": text,
             "braille": braille,
         }
+
+    except Exception as e:
+        raise Exception(f"Error in convert_video_to_audio_text_and_braille: {str(e)}")
+
     finally:
-        # Clean up the temp video file
-        if os.path.exists(temp_video_path):
+        # Clean up the temporary video file
+        if temp_video_path and os.path.exists(temp_video_path):
             os.remove(temp_video_path)

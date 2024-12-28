@@ -42,44 +42,6 @@ def analyze_image_base64(base64_image):
     return response.json()
 
 
-def convert_to_braille(text):
-    """
-    Converts plain text into Braille representation.
-    """
-    braille_map = {
-        'a': '⠁', 'b': '⠃', 'c': '⠉', 'd': '⠙', 'e': '⠑',
-        'f': '⠋', 'g': '⠛', 'h': '⠓', 'i': '⠊', 'j': '⠚',
-        'k': '⠅', 'l': '⠇', 'm': '⠍', 'n': '⠝', 'o': '⠕',
-        'p': '⠏', 'q': '⠟', 'r': '⠗', 's': '⠎', 't': '⠞',
-        'u': '⠥', 'v': '⠧', 'w': '⠺', 'x': '⠭', 'y': '⠽',
-        'z': '⠵', ' ': ' '
-    }
-
-    return ''.join(braille_map.get(char, char) for char in text.lower())
-
-def convert_text_to_speech(text, audio_dir):
-    """
-    Converts text to an audio file using Azure Speech SDK.
-    Returns the filename of the generated audio file.
-    """
-    if not AZURE_SPEECH_KEY or not AZURE_SPEECH_REGION:
-        raise ValueError("Azure Speech key or region not found in environment variables")
-
-    speech_config = speechsdk.SpeechConfig(subscription=AZURE_SPEECH_KEY, region=AZURE_SPEECH_REGION)
-    speech_config.speech_synthesis_voice_name = "en-US-AriaNeural"
-
-    filename = f"tts_output_{uuid.uuid4().hex}.wav"
-    file_path = os.path.join(audio_dir, filename)
-
-    audio_config = speechsdk.audio.AudioConfig(filename=file_path)
-    synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config, audio_config=audio_config)
-
-    result = synthesizer.speak_text_async(text).get()
-    if result.reason != speechsdk.ResultReason.SynthesizingAudioCompleted:
-        raise Exception("Text-to-speech synthesis failed")
-
-    return filename
-
 def process_image(base64_image, audio_dir):
     """
     Processes a Base64-encoded image and generates text, Braille, and audio outputs.
