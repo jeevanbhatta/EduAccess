@@ -8,4 +8,5 @@ Pillow==9.2.0
 Werkzeug==2.3.7
 pdfminer.six==20201018
 python-docx==0.8.11
+azure-ai-vision-imageanalysis
 # pytesseract & Pillow if you plan to handle any text extraction from images or advanced Braille logic. 
