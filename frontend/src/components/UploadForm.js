@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-const UploadForm = ({ onAudioReceived, onBrailleReceived }) => {
+const UploadForm = ({ onAudioReceived, onBrailleReceived, onTextReceived }) => {
   const [textInput, setTextInput] = useState("");
   const [textFile, setTextFile] = useState(null);
   const [videoFile, setVideoFile] = useState(null);
@@ -58,15 +58,80 @@ const UploadForm = ({ onAudioReceived, onBrailleReceived }) => {
   };
 
   const handleAnalyzeImage = async () => {
-    await handleFileUpload(imageFile, "http://localhost:5000/api/analyze-image", (data) =>
-      setTextInput(data.text || "")
-    );
-  };
+    if (!imageFile) {
+      alert("Please select an image file.");
+      return;
+    }
+  
+    try {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const imageData = reader.result;
+  
+        const response = await fetch("http://localhost:5000/api/analyze-image", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/octet-stream",
+          },
+          body: imageData,
+        });
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Error analyzing image:", errorData);
+          alert("Error analyzing image: " + errorData.error);
+          return;
+        }
+  
+        const data = await response.json();
+        console.log("Image analysis result:", data);
+  
+        // Display meaningful results in the frontend
+        if (data.text) {
+          onTextReceived(data.text); // Update the display in the UI
+        } else {
+          alert("No meaningful description generated.");
+        }
+      };
+  
+      reader.onerror = (err) => {
+        console.error("Error reading file:", err);
+        alert("Error reading file. Please try again.");
+      };
+  
+      reader.readAsArrayBuffer(imageFile);
+    } catch (error) {
+      console.error("Error in handleAnalyzeImage:", error);
+      alert("An unexpected error occurred while analyzing the image.");
+    }
+  };  
 
   const handleVideoToAudio = async () => {
-    await handleFileUpload(videoFile, "http://localhost:5000/api/video-to-audio", (data) =>
-      onAudioReceived(data.audio_file)
-    );
+    if (!videoFile) {
+      alert("Please select a video file.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", videoFile);
+
+    try {
+      setIsLoading(true);
+      setErrorMessage(""); // Clear any previous errors
+
+      const response = await axios.post("http://localhost:5000/api/video-to-audio", formData, {
+        responseType: "blob", // Expect a binary file as the response
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      const audioUrl = URL.createObjectURL(response.data); // Create a URL for the audio blob
+      onAudioReceived(audioUrl); // Pass the URL to the audio player
+    } catch (err) {
+      console.error("Error in handleVideoToAudio:", err);
+      setErrorMessage(err.response?.data?.error || "An unexpected error occurred.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleVideoToTextAndBraille = async () => {
@@ -74,28 +139,45 @@ const UploadForm = ({ onAudioReceived, onBrailleReceived }) => {
       alert("Please select a video file.");
       return;
     }
-  
+
     const formData = new FormData();
     formData.append("file", videoFile);
-  
+
     try {
       setIsLoading(true);
       setErrorMessage(""); // Clear any previous errors
-  
-      const response = await axios.post("http://localhost:5000/api/video-to-text-and-braille", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-  
+
+      const response = await axios.post(
+        "http://localhost:5000/api/video-to-text-and-braille",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
       const data = response.data;
-      setTextInput(data.text || "");
-      onBrailleReceived(data.braille || "");
+      setTextInput(data.text || ""); // Set the extracted text in the text input
+      onBrailleReceived(data.braille || ""); // Update Braille output
+      if (data.audio_file) {
+        const audioResponse = await axios.get(`http://localhost:5000/api/audio/${data.audio_file}`, {
+          responseType: "blob",
+        });
+        const audioUrl = URL.createObjectURL(audioResponse.data);
+        onAudioReceived(audioUrl); // Pass the URL to the audio player
+      } else {
+        console.warn("No audio file received.");
+      }
+
+      if (data.text) {
+        onTextReceived(data.text); // Pass the text to be displayed in a dedicated section
+      }
     } catch (err) {
       console.error("Error in handleVideoToTextAndBraille:", err);
       setErrorMessage(err.response?.data?.error || "An unexpected error occurred.");
     } finally {
       setIsLoading(false);
     }
-  };  
+  };
 
   const handleTextToAudio = async () => {
     if (!textInput.trim()) {

@@ -1,7 +1,7 @@
 import os
 import uuid
 import io
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, send_file
 from flask_cors import CORS
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
@@ -59,9 +59,18 @@ def api_video_to_audio():
         return jsonify({"error": "No video filename provided"}), 400
 
     try:
-        # Process the video directly in memory
+        # Process the video directly
         result = convert_video_to_audio_text_and_braille(video_file)
-        return jsonify(result)
+
+        # Get the audio file path from the result
+        audio_file_path = result.get("audio_file_path")
+
+        if not audio_file_path or not os.path.exists(audio_file_path):
+            return jsonify({"error": "Audio file was not generated."}), 500
+
+        # Send the audio file as a response
+        return send_file(audio_file_path, as_attachment=True)
+
     except Exception as e:
         print(f"Error in /api/video-to-audio: {e}")
         return jsonify({"error": str(e)}), 500
@@ -117,15 +126,15 @@ def upload_text_file():
 @app.route("/api/analyze-image", methods=["POST"])
 def analyze_image_route():
     """
-    Analyze an image and return extracted data
+    Analyze an image and return extracted data.
+    This expects raw bytes as the payload, not multipart/form-data.
     """
     try:
-        data = request.get_json()
-        base64_image = data.get("image")
-        if not base64_image:
-            return jsonify({"error": "No image provided"}), 400
+        if not request.data:
+            return jsonify({"error": "No image data provided"}), 400
 
-        result = process_image(base64_image, AUDIO_DIR)
+        # Process raw image data
+        result = process_image(request.data, AUDIO_DIR)
         return jsonify(result)
     except Exception as e:
         print(f"Error in /api/analyze-image: {e}")
