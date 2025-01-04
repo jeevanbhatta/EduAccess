@@ -26,3 +26,6 @@ venv/
 
 #Ignore pycache
 __pycache__/
+
+#Ignore generated audio files
+backend/static/audio/
