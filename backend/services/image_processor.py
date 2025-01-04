@@ -52,14 +52,9 @@ def process_image(image_data, audio_dir):
 
         result = response.json()
 
-        # Extract the caption
-        caption_data = result.get("captionResult", {}).get("captions", [{}])
-        if caption_data and isinstance(caption_data, list) and len(caption_data) > 0:
-            caption_text = caption_data[0].get("text", "No caption available")
-            caption_confidence = caption_data[0].get("confidence", 0.0)
-        else:
-            caption_text = "No caption available"
-            caption_confidence = 0.0
+        caption_text = result.get("captionResult", {}).get("text", "No caption available")
+        caption_confidence = result.get("captionResult", {}).get("confidence", 0.0)
+
 
         # Convert the caption text to braille
         braille_caption = convert_text_to_braille(caption_text)
