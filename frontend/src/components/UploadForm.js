@@ -169,13 +169,40 @@ const UploadForm = ({ onAudioReceived, onBrailleReceived, onTextReceived }) => {
       alert("Please enter text for conversion.");
       return;
     }
-
-    await handleJsonRequest(
-      { text: textInput.trim() },
-      "http://localhost:5000/api/text-to-audio",
-      (data) => onAudioReceived(data.audio_file)
-    );
+  
+    try {
+      setIsLoading(true);
+      setErrorMessage("");
+      
+      // Make a POST request to the backend
+      const response = await axios.post(
+        "http://localhost:5000/api/text-to-audio",
+        { text: textInput.trim() },
+        { headers: { "Content-Type": "application/json" } }
+      );
+  
+      const { audio_file } = response.data;
+  
+      if (audio_file) {
+        // Fetch the actual audio file
+        const audioResponse = await axios.get(`http://localhost:5000/api/audio/${audio_file}`, {
+          responseType: "blob",
+        });
+        
+        const audioUrl = URL.createObjectURL(audioResponse.data);
+        onAudioReceived(audioUrl); // Pass the audio URL to the parent component
+      } else {
+        console.warn("No audio file received from the backend.");
+        setErrorMessage("No audio file received.");
+      }
+    } catch (err) {
+      console.error("Error in handleTextToAudio:", err);
+      setErrorMessage(err.response?.data?.error || "An unexpected error occurred.");
+    } finally {
+      setIsLoading(false);
+    }
   };
+  
 
   const handleTextToBraille = async () => {
     const trimmedText = textInput.trim();

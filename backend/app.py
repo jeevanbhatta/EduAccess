@@ -100,7 +100,7 @@ def download_audio(filename):
 @app.route("/api/upload-text-file", methods=["POST"])
 def upload_text_file():
     """
-    Upload and extract text from a text file
+    Upload and extract text from a text file.
     """
     if "file" not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
@@ -110,11 +110,21 @@ def upload_text_file():
         return jsonify({"error": "No file selected"}), 400
 
     try:
-        extracted_text = extract_text_from_file(uploaded_file.stream)
+        # Save the uploaded file to a temporary location
+        temp_file_path = os.path.join(UPLOAD_FOLDER, secure_filename(uploaded_file.filename))
+        uploaded_file.save(temp_file_path)
+
+        # Extract text from the saved file
+        extracted_text = extract_text_from_file(temp_file_path)
+
+        # Clean up: Remove the temporary file
+        os.remove(temp_file_path)
+
         return jsonify({"text": extracted_text})
     except Exception as e:
         print(f"Error in /api/upload-text-file: {e}")
         return jsonify({"error": f"Failed to extract text: {str(e)}"}), 500
+
 
 @app.route("/api/analyze-image", methods=["POST"])
 def analyze_image_route():
