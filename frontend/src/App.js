@@ -4,10 +4,17 @@ import UploadForm from "./components/UploadForm";
 function App() {
   const [audioFile, setAudioFile] = useState(null);
   const [brailleText, setBrailleText] = useState("");
-  const [extractedText, setExtractedText] = useState("");
-  const [imageDetails, setImageDetails] = useState({ tags: [], categories: [], objects: [] });
+  const [caption, setCaption] = useState("");
+  const [confidence, setConfidence] = useState(0);
 
-  // Handler to set the Braille text
+  // We retain these in case you decide to expand image details in the future
+  const [imageDetails, setImageDetails] = useState({
+    tags: [],
+    categories: [],
+    objects: [],
+  });
+
+  // Handler to set Braille text (used for both text-based and image-based braille)
   const handleBrailleReceived = (braille) => {
     setBrailleText(braille);
   };
@@ -17,10 +24,16 @@ function App() {
     setAudioFile(audio);
   };
 
-  // Handler to set the extracted text and additional details
+  // Handler to set the caption text and confidence (plus any future details)
   const handleTextReceived = (text, details = {}) => {
-    setExtractedText(text);
-    setImageDetails(details);
+    setCaption(text || "No caption available");
+    setConfidence(details.confidence || 0);
+    // Update imageDetails if you want to store more info
+    setImageDetails({
+      tags: details.tags || [],
+      categories: details.categories || [],
+      objects: details.objects || [],
+    });
   };
 
   return (
@@ -31,13 +44,13 @@ function App() {
         lineHeight: "1.6",
       }}
     >
-      {/* Main App Header */}
       <header style={{ textAlign: "center", marginBottom: "2rem" }}>
         <h1
           style={{
             fontSize: "2.5rem",
             color: "#007bff",
           }}
+          aria-label="EduAccess Main Header"
         >
           EduAccess
         </h1>
@@ -46,25 +59,25 @@ function App() {
             fontSize: "1.2rem",
             color: "#555",
           }}
+          aria-label="EduAccess Subtitle"
         >
           Accessible solutions for visually impaired individuals.
         </p>
       </header>
 
-      {/* Upload Form Component */}
       <main>
         <UploadForm
           onAudioReceived={handleAudioReceived}
           onBrailleReceived={handleBrailleReceived}
-          onTextReceived={handleTextReceived}
+          onTextReceived={(text, details) => handleTextReceived(text, details)}
         />
       </main>
 
-      {/* Display Extracted Text and Details */}
-      {(extractedText || imageDetails.tags.length > 0 || imageDetails.categories.length > 0 || imageDetails.objects.length > 0) && (
+      {/* Display Extracted Caption */}
+      {caption && (
         <section
           aria-live="polite"
-          aria-labelledby="text-section"
+          aria-labelledby="caption-section"
           style={{
             marginTop: "2rem",
             backgroundColor: "#f9f9f9",
@@ -73,85 +86,22 @@ function App() {
             border: "1px solid #ddd",
           }}
         >
-          {extractedText && (
-            <>
-              <h2 id="text-section" style={{ fontSize: "1.8rem", color: "#333" }}>
-                Extracted Text
-              </h2>
-              <pre
-                style={{
-                  fontSize: "1.5rem",
-                  backgroundColor: "#fff",
-                  padding: "10px",
-                  whiteSpace: "pre-wrap",
-                  wordWrap: "break-word",
-                  borderRadius: "5px",
-                  border: "1px solid #ddd",
-                  marginTop: "1rem",
-                }}
-              >
-                {extractedText}
-              </pre>
-            </>
-          )}
-          {(imageDetails.tags.length > 0 || imageDetails.categories.length > 0 || imageDetails.objects.length > 0) && (
-            <>
-              <h2 style={{ fontSize: "1.8rem", color: "#333", marginTop: "1rem" }}>
-                Image Analysis Details
-              </h2>
-              {imageDetails.tags.length > 0 && (
-                <div>
-                  <h3>Tags</h3>
-                  <ul
-                    style={{
-                      fontSize: "1.2rem",
-                      listStyleType: "disc",
-                      marginLeft: "20px",
-                      color: "#555",
-                    }}
-                  >
-                    {imageDetails.tags.map((tag, index) => (
-                      <li key={index}>{tag}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {imageDetails.categories.length > 0 && (
-                <div>
-                  <h3>Categories</h3>
-                  <ul
-                    style={{
-                      fontSize: "1.2rem",
-                      listStyleType: "disc",
-                      marginLeft: "20px",
-                      color: "#555",
-                    }}
-                  >
-                    {imageDetails.categories.map((category, index) => (
-                      <li key={index}>{category.name}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {imageDetails.objects.length > 0 && (
-                <div>
-                  <h3>Objects</h3>
-                  <ul
-                    style={{
-                      fontSize: "1.2rem",
-                      listStyleType: "disc",
-                      marginLeft: "20px",
-                      color: "#555",
-                    }}
-                  >
-                    {imageDetails.objects.map((object, index) => (
-                      <li key={index}>{object.object}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </>
-          )}
+          <h2 id="caption-section" style={{ fontSize: "1.8rem", color: "#333" }}>
+            Image Caption
+          </h2>
+          <p
+            style={{
+              fontSize: "1.5rem",
+              backgroundColor: "#fff",
+              padding: "10px",
+              borderRadius: "5px",
+              border: "1px solid #ddd",
+              marginTop: "1rem",
+            }}
+            aria-label="Caption Text"
+          >
+            {caption} (Confidence: {confidence.toFixed(2)})
+          </p>
         </section>
       )}
 
@@ -178,13 +128,14 @@ function App() {
               width: "100%",
               marginTop: "1rem",
             }}
+            aria-label="Audio Playback"
           >
             Your browser does not support the audio element.
           </audio>
         </section>
       )}
 
-      {/* Display Braille Output */}
+      {/* Display Braille Output (for either text or image caption) */}
       {brailleText && (
         <section
           aria-live="polite"
@@ -211,6 +162,7 @@ function App() {
               border: "1px solid #ddd",
               marginTop: "1rem",
             }}
+            aria-label="Braille Text"
           >
             {brailleText}
           </pre>
