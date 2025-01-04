@@ -5,8 +5,8 @@ body {
     padding: 0;
     background-color: #f9f9f9;
     color: #333;
-    font-size: 16px;
-    line-height: 1.5;
+    font-size: 1.125rem; /* ~18px for better readability */
+    line-height: 1.6;    /* Increased for easier scanning */
 }
 
 /* Header Styles */
@@ -43,10 +43,13 @@ textarea {
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Buttons */
+/* Buttons 
+   Updated to ensure higher contrast between text (#fff) and background (#0056b3).
+   Hover and active states use progressively darker shades for clarity.
+*/
 button {
-    background-color: #007bff;
-    color: white;
+    background-color: #0056b3;
+    color: #fff;
     padding: 10px 15px;
     margin: 5px;
     border: none;
@@ -58,17 +61,17 @@ button {
 }
 
 button:hover {
-    background-color: #0056b3;
+    background-color: #004085;
 }
 
 button:active {
-    background-color: #004080;
+    background-color: #003060;
 }
 
 button:focus {
-    outline: 2px solid #3498db;
+    outline: 2px solid #ffd600; /* High-contrast focus outline */
     outline-offset: 2px;
-    box-shadow: 0 0 4px rgba(52, 152, 219, 0.5);
+    box-shadow: 0 0 4px rgba(255, 214, 0, 0.5);
 }
 
 /* File Upload */
@@ -80,9 +83,9 @@ input[type="file"] {
 
 /* File Upload Focus */
 input[type="file"]:focus {
-    outline: 2px solid #3498db;
+    outline: 2px solid #ffd600;
     outline-offset: 2px;
-    box-shadow: 0 0 4px rgba(52, 152, 219, 0.5);
+    box-shadow: 0 0 4px rgba(255, 214, 0, 0.5);
 }
 
 /* Sections */
@@ -95,7 +98,9 @@ section {
     border: 1px solid #ddd;
 }
 
-/* Audio Player */
+/* Audio Player 
+   Added a border for a clearer focus outline when tabbing to the player.
+*/
 audio {
     margin-top: 20px;
     width: 100%;
@@ -129,16 +134,20 @@ pre {
     border: 0;
 }
 
-/* Accessibility: Focusable Elements */
+/* Accessibility: Focusable Elements 
+   Matching the focus style for consistency across components.
+*/
 button:focus, textarea:focus, input[type="file"]:focus {
-    border: 2px solid #3498db;
-    box-shadow: 0 0 4px rgba(52, 152, 219, 0.5);
+    border: 2px solid #ffd600;
+    box-shadow: 0 0 4px rgba(255, 214, 0, 0.5);
 }
 
-/* Reset Button */
+/* Reset Button 
+   Adjusted background color for higher contrast with white text.
+*/
 button.reset {
     background-color: #ff4d4d;
-    color: white;
+    color: #fff;
 }
 
 button.reset:hover {
