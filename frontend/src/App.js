@@ -6,29 +6,30 @@ function App() {
   const [brailleText, setBrailleText] = useState("");
   const [caption, setCaption] = useState("");
   const [confidence, setConfidence] = useState(0);
+  const [captionLabel, setCaptionLabel] = useState(""); // New state for dynamic label
 
-  // We retain these in case you decide to expand image details in the future
+  // Retain image details for future use
   const [imageDetails, setImageDetails] = useState({
     tags: [],
     categories: [],
     objects: [],
   });
 
-  // Handler to set Braille text (used for both text-based and image-based braille)
+  // Handler to update Braille output
   const handleBrailleReceived = (braille) => {
     setBrailleText(braille);
   };
 
-  // Handler to set the audio file
+  // Handler to update Audio output
   const handleAudioReceived = (audio) => {
     setAudioFile(audio);
   };
 
-  // Handler to set the caption text and confidence (plus any future details)
-  const handleTextReceived = (text, details = {}) => {
+  // Handler to update caption, confidence, and label dynamically
+  const handleTextReceived = (text, details = {}, label = "Output") => {
     setCaption(text || "No caption available");
     setConfidence(details.confidence || 0);
-    // Update imageDetails if you want to store more info
+    setCaptionLabel(label); // Set the label dynamically
     setImageDetails({
       tags: details.tags || [],
       categories: details.categories || [],
@@ -44,6 +45,7 @@ function App() {
         lineHeight: "1.6",
       }}
     >
+      {/* Header Section */}
       <header style={{ textAlign: "center", marginBottom: "2rem" }}>
         <h1
           style={{
@@ -65,15 +67,18 @@ function App() {
         </p>
       </header>
 
+      {/* Upload Form */}
       <main>
         <UploadForm
           onAudioReceived={handleAudioReceived}
           onBrailleReceived={handleBrailleReceived}
-          onTextReceived={(text, details) => handleTextReceived(text, details)}
+          onTextReceived={(text, details, label) =>
+            handleTextReceived(text, details, label)
+          }
         />
       </main>
 
-      {/* Display Extracted Caption */}
+      {/* Display Caption Output */}
       {caption && (
         <section
           aria-live="polite"
@@ -86,8 +91,13 @@ function App() {
             border: "1px solid #ddd",
           }}
         >
-          <h2 id="caption-section" style={{ fontSize: "1.8rem", color: "#333" }}>
-            Image Caption
+          <h2
+            id="caption-section"
+            style={{ fontSize: "1.8rem", color: "#333" }}
+            tabIndex="0"
+            aria-label={`${captionLabel} Section`}
+          >
+            {captionLabel}
           </h2>
           <p
             style={{
@@ -98,9 +108,13 @@ function App() {
               border: "1px solid #ddd",
               marginTop: "1rem",
             }}
-            aria-label="Caption Text"
+            aria-label={`${captionLabel}: ${caption} ${
+              confidence > 0 ? `with confidence of ${confidence.toFixed(2)}` : ""
+            }`}
+            tabIndex="0"
           >
-            {caption} (Confidence: {confidence.toFixed(2)})
+            {caption}
+            {confidence > 0 ? ` (Confidence: ${confidence.toFixed(2)})` : ""}
           </p>
         </section>
       )}
@@ -118,7 +132,12 @@ function App() {
             border: "1px solid #ddd",
           }}
         >
-          <h2 id="audio-section" style={{ fontSize: "1.8rem", color: "#333" }}>
+          <h2
+            id="audio-section"
+            style={{ fontSize: "1.8rem", color: "#333" }}
+            tabIndex="0"
+            aria-label="Audio File Section"
+          >
             Audio File
           </h2>
           <audio
@@ -129,13 +148,14 @@ function App() {
               marginTop: "1rem",
             }}
             aria-label="Audio Playback"
+            tabIndex="0"
           >
             Your browser does not support the audio element.
           </audio>
         </section>
       )}
 
-      {/* Display Braille Output (for either text or image caption) */}
+      {/* Display Braille Output */}
       {brailleText && (
         <section
           aria-live="polite"
@@ -148,7 +168,12 @@ function App() {
             border: "1px solid #ddd",
           }}
         >
-          <h2 id="braille-section" style={{ fontSize: "1.8rem", color: "#333" }}>
+          <h2
+            id="braille-section"
+            style={{ fontSize: "1.8rem", color: "#333" }}
+            tabIndex="0"
+            aria-label="Braille Output Section"
+          >
             Braille Output
           </h2>
           <pre
@@ -163,6 +188,7 @@ function App() {
               marginTop: "1rem",
             }}
             aria-label="Braille Text"
+            tabIndex="0"
           >
             {brailleText}
           </pre>

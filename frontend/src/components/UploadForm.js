@@ -126,14 +126,15 @@ const UploadForm = ({ onAudioReceived, onBrailleReceived, onTextReceived }) => {
       alert("Please select a video file.");
       return;
     }
-
+  
     const formData = new FormData();
     formData.append("file", videoFile);
-
+  
     try {
       setIsLoading(true);
       setErrorMessage("");
-
+  
+      // Make a POST request to the backend
       const response = await axios.post(
         "http://localhost:5000/api/video-to-text-and-braille",
         formData,
@@ -141,11 +142,23 @@ const UploadForm = ({ onAudioReceived, onBrailleReceived, onTextReceived }) => {
           headers: { "Content-Type": "multipart/form-data" },
         }
       );
-
+  
       const data = response.data;
-      setTextInput(data.text || "");
-      onBrailleReceived(data.braille || "");
-
+  
+      // Update both text and braille output
+      if (data.text) {
+        setTextInput(data.text || ""); // Update the text input field
+        onTextReceived(data.text); // Notify parent about the new text
+      } else {
+        console.warn("No text received from the backend.");
+      }
+  
+      if (data.braille) {
+        onBrailleReceived(data.braille || ""); // Update Braille output
+      } else {
+        console.warn("No braille output received from the backend.");
+      }
+  
       // If there's an audio file name returned
       if (data.audio_file) {
         const audioResponse = await axios.get(`http://localhost:5000/api/audio/${data.audio_file}`, {
@@ -163,6 +176,7 @@ const UploadForm = ({ onAudioReceived, onBrailleReceived, onTextReceived }) => {
       setIsLoading(false);
     }
   };
+  
 
   const handleTextToAudio = async () => {
     if (!textInput.trim()) {
