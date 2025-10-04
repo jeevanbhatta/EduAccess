@@ -4,7 +4,7 @@ python-dotenv==1.0.0
 azure-cognitiveservices-speech==1.41.1
 moviepy==1.0.3
 pytesseract==0.3.10
-Pillow==9.2.0
+Pillow>=9.2.0,<10.0
 Werkzeug==2.3.7
 pdfminer.six==20201018
 python-docx==0.8.11
