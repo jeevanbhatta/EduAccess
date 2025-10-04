@@ -42,3 +42,4 @@ def convert_video_to_audio_text_and_braille(video_file):
         # Clean up the temporary video file
         if temp_video_path and os.path.exists(temp_video_path):
             os.remove(temp_video_path)
+

@@ -8,5 +8,8 @@ Pillow==9.2.0
 Werkzeug==2.3.7
 pdfminer.six==20201018
 python-docx==0.8.11
+# requests is used for calling Azure Vision REST endpoints; don't install the deprecated
+# `azure` meta-package — install only service-specific SDKs when needed. The project
+# already includes the speech SDK below.
 requests==2.31.0
 # pytesseract & Pillow for text extraction from images or Braille logic
