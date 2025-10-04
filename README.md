@@ -2,6 +2,8 @@
 
 **EduAccess** is a platform designed to make educational materials accessible for blind and visually impaired individuals. By leveraging cutting-edge technology, EduAccess facilitates the conversion of text, video, and other content into audio or Braille formats, empowering users with enhanced access to knowledge and learning resources.
 
+## Deployment Link: https://yellow-mushroom-0144bc31e.1.azurestaticapps.net/
+
 ---
 
 ## Features
